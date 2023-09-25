@@ -1,0 +1,121 @@
+import tkinter as tk
+from tkinter import messagebox
+import datetime
+
+# Dictionary to store tasks
+tasks = {}
+
+# Function to add a task
+def add_task():
+    task_name = entry_task_name.get()
+    due_date = entry_due_date.get()
+    description = entry_description.get()
+    
+    if due_date:
+        try:
+            due_date = datetime.datetime.strptime(due_date, "%Y-%m-%d").date()
+        except ValueError:
+            messagebox.showerror("Error", "Invalid date format. Task will be added without a due date.")
+            due_date = None
+    
+    task = {
+        'name': task_name,
+        'due_date': due_date,
+        'description': description,
+        'completed': False
+    }
+    
+    task_id = len(tasks) + 1
+    tasks[task_id] = task
+    list_tasks()
+    entry_task_name.delete(0, tk.END)
+    entry_due_date.delete(0, tk.END)
+    entry_description.delete(0, tk.END)
+    messagebox.showinfo("Success", f"Task '{task_name}' added successfully!")
+
+# Function to list tasks
+def list_tasks():
+    listbox_tasks.delete(0, tk.END)
+    for task_id, task in tasks.items():
+        status = "Completed" if task['completed'] else "Not Completed"
+        due_date = task['due_date'] if task['due_date'] else "Not Set"
+        description = task['description'] if task['description'] else "No Description"
+        listbox_tasks.insert(tk.END, f"Task {task_id}: {task['name']} - Due Date: {due_date} - Description: {description} - Status: {status}")
+
+# Function to remove a task
+def remove_task():
+    selected_task = listbox_tasks.curselection()
+    if not selected_task:
+        messagebox.showerror("Error", "Please select a task to remove.")
+        return
+    
+    task_index = selected_task[0]
+    task_id = int(listbox_tasks.get(task_index).split()[1][:-1])
+    if task_id in tasks:
+        removed_task = tasks.pop(task_id)
+        list_tasks()
+        messagebox.showinfo("Success", f"Task '{removed_task['name']}' removed successfully!")
+    else:
+        messagebox.showerror("Error", "Invalid task ID.")
+
+# Function to mark a task as completed
+def mark_task_completed():
+    selected_task = listbox_tasks.curselection()
+    if not selected_task:
+        messagebox.showerror("Error", "Please select a task to mark as completed.")
+        return
+    
+    task_index = selected_task[0]
+    task_id = int(listbox_tasks.get(task_index).split()[1][:-1])
+    if task_id in tasks:
+        tasks[task_id]['completed'] = True
+        list_tasks()
+        messagebox.showinfo("Success", f"Task '{tasks[task_id]['name']}' marked as completed!")
+    else:
+        messagebox.showerror("Error", "Invalid task ID.")
+
+# Create a Tkinter window
+root = tk.Tk()
+root.title("Task Manager")
+
+# Add a label to mention the designer
+label_designer = tk.Label(
+    root,
+    text="Designed by Sandeep Singh",
+    font=("Helvetica", 12, "italic"),
+    bg="blue",  # Background color
+    fg="white",  # Text color
+    padx=10,  # Padding on the left and right
+    pady=5,  # Padding on the top and bottom
+)
+label_designer.grid(row=5, column=1, sticky="nw")
+label_designer.pack()
+
+# Create and pack GUI elements
+label_task_name = tk.Label(root, text="Task Name:")
+label_due_date = tk.Label(root, text="Due Date (YYYY-MM-DD, optional):")
+label_description = tk.Label(root, text="Description (optional):")
+
+entry_task_name = tk.Entry(root)
+entry_due_date = tk.Entry(root)
+entry_description = tk.Entry(root)
+
+button_add_task = tk.Button(root, text="Add Task", command=add_task)
+button_remove_task = tk.Button(root, text="Remove Task", command=remove_task)
+button_mark_completed = tk.Button(root, text="Mark Completed", command=mark_task_completed)
+
+listbox_tasks = tk.Listbox(root, height=10, width=70)
+
+label_task_name.pack()
+entry_task_name.pack()
+label_due_date.pack()
+entry_due_date.pack()
+label_description.pack()
+entry_description.pack()
+button_add_task.pack()
+button_remove_task.pack()
+button_mark_completed.pack()
+listbox_tasks.pack()
+
+# Start the Tkinter main loop
+root.mainloop()
